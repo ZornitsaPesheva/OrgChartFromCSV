@@ -1,0 +1,86 @@
+﻿
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #tree {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <script src="https://balkangraph.com/js/latest/orgchart.js"></script>
+
+
+
+    <div id="tree"></div>
+    <script>
+
+        var readCsvFile = function (file, callback) {
+            file += '?_= ' + new Date().getTime();
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, true);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4) {
+                    if (rawFile.status === 200 || rawFile.status == 0) {
+                        var allText = rawFile.responseText;
+                        
+                        var csv = OrgChart._csvToArray(allText);
+                        var nodes = [];
+                        var columnNames = csv[0]; 
+
+                        for (var i = 1; i < csv.length; i++) {
+                            var node = {};
+                            for (var j = 0; j < csv[i].length; j++) {
+                                var name = columnNames[j];
+                                var val = csv[i][j];
+                                if (name == 'tags' && val != '') {
+                                    val = val.split(',');
+                                }
+                                else if (name == 'tags' && val == '') {
+                                    continue;
+                                }
+                                node[name] = val;
+                            }
+
+                            if (node.id.trim() != '') {
+                                nodes.push(node);
+                            }
+                        }
+
+                        callback(nodes);
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
+
+        var chart = new OrgChart(document.getElementById("tree"), {
+            nodeBinding: {
+                field_0: "Employee Name",
+            },
+            menu: {
+                csv: { text: "csv" }
+            }
+        });
+
+        readCsvFile('source.csv', function (nodes) {
+            chart.load(nodes);
+        });
+    </script>
+
+
+</body>
+
+</html>
